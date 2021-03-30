@@ -1,6 +1,6 @@
 class: middle hide-slide-number
 
-# <ins>Platform-<br />Powered</ins>
+# <ins>Platform-Powered</ins>
 
 Build a frontend platform that scales as fast as you do
 
@@ -75,20 +75,6 @@ class: diagram-image middle center
 #### Continuum of Control
 
 <img src="./images/control-freedom.jpg" />
-
----
-
-class: diagram-image middle center
-
-#### Continuum of Control
-
-<img width="100%" src="./images/constraints-freedom-expanded-arrow.png" />
-
----
-
-1. Introduce *constraints*
-2. That create *standardization*
-3. So you can apply *automation*
 
 ---
 

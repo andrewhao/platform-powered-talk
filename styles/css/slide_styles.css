@@ -50,7 +50,7 @@
   transform-origin: 0; }
 
 .hljs {
-  background: #4e38fd !important; }
+  background: #FFFFFF !important; }
 
 body {
   font-family: "Roboto Mono", monospace;
@@ -101,7 +101,7 @@ pre {
   background-color: #4e38fd;
   color: #ffffff; }
   .remark-slide-content.background-color-code {
-    background-color: #4e38fd; }
+    background-color: #FFFFFF; }
   .remark-slide-content p {
     font-size: 1.15em; }
   .remark-slide-content h1 {
@@ -115,6 +115,9 @@ pre {
   .remark-slide-content h3 {
     color: #ffffff;
     font-size: 1.6em; }
+
+.emoji-large {
+  font-size: 2em; }
 
 a,
 a:link,
@@ -132,7 +135,15 @@ a:active {
 
 .diagram-image img {
   filter: invert(1) contrast(1.7);
-  mix-blend-mode: screen; }
+  mix-blend-mode: screen;
+  max-width: 100%;
+  height: auto; }
+
+.table-centered table {
+  border: 0; }
+  .table-centered table td, .table-centered table th {
+    text-align: center;
+    border: 0; }
 
 .background-image-contain {
   background-size: contain !important; }

@@ -1,7 +1,7 @@
 // https://coolors.co/dee7ed-4b00b5-23185e-4392f1-dc493a
 
 $background-color: #4e38fd;
-$code-background-color: $background-color;
+$code-background-color: #FFFFFF;
 $text-color: #ffffff;
 $link-color: #ffffff;
 $h1-color: #ffffff;
@@ -100,6 +100,10 @@ pre {
   }
 }
 
+.emoji-large {
+  font-size: 2em;
+}
+
 a,
 a:link,
 a:visited,
@@ -123,6 +127,18 @@ a:active {
 .diagram-image img {
     filter: invert(1) contrast(1.7);
     mix-blend-mode: screen;
+    max-width: 100%;
+    height: auto;
+}
+
+.table-centered {
+  table {
+    td, th {
+      text-align: center;
+      border: 0;
+    }
+    border: 0;
+  }
 }
 
 .background-image-contain {

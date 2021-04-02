@@ -22,8 +22,7 @@ class: middle
 
 ## "...most tools and processes only support about one order of magnitude of growth before becoming ineffective"
 
-##### Will Larson. *An Elegant Puzzle: Systems of Engineering Management*
-
+##### Will Larson. _An Elegant Puzzle: Systems of Engineering Management_
 
 ---
 
@@ -40,28 +39,24 @@ But problems
 
 ---
 
+## Generation 2: Microservices
 
-## Generation 2: React Service Template
-
-- Node + React isomorphic (SSR) apps
-- Lyft really started to embrace microservices = service explosion
+- Node + React isomorphic (SSR) apps via a templated service generator
+- ...coupled with infrastructure investments in microservices
+- ...led to a microservice explosion!
 
 ---
 
 ## But the problems were starting to catch up to us
 
-- x
-- y
-- z
+- Long-lived services require maintenance
+- Platform was fragmenting
+- New infrastructure updates were hard to apply
+- Increased service load
+
 ???
 
-- Architecture drift
-- Entropy
-- Natural systems decay
-
-
 ---
-
 
 class: diagram-image middle center
 
@@ -72,7 +67,6 @@ class: diagram-image middle center
 ???
 
 This is a talk about leverage, and how to think about it and knowing where to apply it. When building a system that scales, you have to find the right points in the system where you can exert technical leverage
-
 
 ---
 
@@ -98,7 +92,6 @@ It can be hard to know where to start. It’s worse to build the wrong abstracti
 
 We selectively apply leverage at different tiers of the system
 
-
 ---
 
 class: diagram-image middle center
@@ -122,8 +115,8 @@ class: table-centered
 
 ## Principles for Technical Leverage
 
-| <h1>👟</h1> | <h1>✨</h1> | <h1>🤖</h1> |
-| -- | -- | -- |
+| <h1>👟</h1>                               | <h1>✨</h1>                | <h1>🤖</h1>                      |
+| ----------------------------------------- | -------------------------- | -------------------------------- |
 | **Stand** on the Shoulders of<br />Giants | **Simplify** to Understand | **Standardize** and **Automate** |
 
 ???
@@ -175,11 +168,12 @@ Previously, every application was a snowflake, configured in its own special way
 
 Next.js wasn’t just about picking a community-run project, but it represented a paradigm shift for applications
 We bought into the convention-over-configuration philosophy which simplified the mental model of building apps at Lyft
-Filesystem router
-Server-side data fetching
-Folder conventions
-This lowered the cognitive load of working across Lyft FE services, making developers more productive across services.
 
+- Filesystem router
+- Server-side data fetching
+- Folder conventions
+
+This lowered the cognitive load of working across Lyft FE services, making developers more productive across services.
 
 ---
 
@@ -215,23 +209,30 @@ A @lyft/service Plugin:
 
 class: background-color-code small-code
 
-```typescript
-// CookieAuthPlugin: Express.js server hook
-import cookieParser from 'cookie-parser';
-import { Application } from 'express';
+```tsx
+// 1. Install the plugin in lyft.plugins.ts
+import CookieAuthPlugin from "@lyft/service-plugin-cookie-auth";
+const plugins = [
+  new CookieAuthPlugin(),
+  /* Other plugins */
+];
+```
 
-const cookieAuthServerHook = (app: Application) => {
-  // Gives us req.cookies
-  app.use(cookieParser); 
+---
 
-  app.use(function parseUserId(req, res, next) {
-    // Assume this decrypts data and returns a user ID from a session
-    const { userId } = parseSessionCookies(req.cookies)
+class: background-color-code small-code
 
-    // Store userId in response for later retrieval
-    res.locals.userId = userId
-    next();
-  });
+```tsx
+// 2. Use it!
+import { useCookieAuth } from "@lyft/service-plugin-cookie-auth";
+
+// In React component
+const Page: React.FC = () => {
+  const { userId, isLoggedIn } = useCookieAuth();
+  // That's it! You can now use as you see fit
+  if (!isLoggedIn()) {
+    return <p>Sorry, you must be logged in</p>;
+  }
 };
 ```
 
@@ -240,8 +241,23 @@ const cookieAuthServerHook = (app: Application) => {
 class: background-color-code small-code
 
 ```typescript
-// Create a context to hold the user ID
-CookieAuthContext = React.createContext();
+// CookieAuthPlugin: Express.js server hook
+import cookieParser from "cookie-parser";
+import { Application } from "express";
+
+const cookieAuthServerHook = (app: Application) => {
+  // Gives us req.cookies
+  app.use(cookieParser);
+
+  app.use(function parseUserId(req, res, next) {
+    // Assume this decrypts data and returns a user ID from a session
+    const { userId } = parseSessionCookies(req.cookies);
+
+    // Store userId in response for later retrieval
+*    res.locals.userId = userId;
+    next();
+  });
+};
 ```
 
 ---
@@ -254,22 +270,21 @@ function CookieAuthApp({ App: NextApp }) {
   return class extends App {
     static getInitialProps = async (appContext) => {
       const originalProps = await App.getInitialProps(appContext);
-      const userId = appContext.ctx.res?.locals?.userId;
+*      const userId = appContext.ctx.res?.locals?.userId;
 
       return { ...originalProps, userId };
     };
 
     render() {
       return (
-        <CookieAuthContext.Provider value={this.props.userId}>
+*        <CookieAuthContext.Provider value={this.props.userId}>
           {super.render()}
-        </CookieAuthContext.Provider>
+*        </CookieAuthContext.Provider>
       );
     }
   };
 }
 ```
-
 
 ---
 
@@ -278,12 +293,13 @@ class: background-color-code small-code
 ```ts
 // Bring it all together into the Plugin
 export default class CookieAuthPlugin {
-    apply = (service: ServicePluginHost) => {
-        service.hooks.server.tap(this.name, cookieAuthServerHook);
-        service.hooks.app.tap(this.name, (App) => CookieAuthApp({ App }));
-    };
+  apply = (service: ServicePluginHost) => {
+    service.hooks.server.tap(this.name, cookieAuthServerHook);
+    service.hooks.app.tap(this.name, (App) => CookieAuthApp({ App }));
+  };
 }
 ```
+
 ---
 
 class: background-color-code small-code
@@ -293,89 +309,104 @@ class: background-color-code small-code
 const useCookieAuth = () => ({
   userId: React.useContext(CookieAuthContext),
   isLoggedIn: () => {
-      const userId = React.useContext(CookieAuthContext);
-      return !!userId
+    const userId = React.useContext(CookieAuthContext);
+    return !!userId;
   },
 });
 ```
 
 ---
 
-class: background-color-code small-code
+### @lyft/service Plugin Ecosystem
 
-```tsx
-// Developer experience as follows...
-import { useCookieAuth } from '@lyft/service-plugin-cookie-auth';
-
-// In React component
-const Page: React.FC = () => {
-    const { user_id, isLoggedIn } = useCookieAuth();
-    // That's it! You can now use as you see fit
-    if (!isLoggedIn()) {
-      return (<p>Sorry, you must be logged in</p>);
-    }
-};
-```
+- State management (Redux, MobX, XState)
+- GraphQL
+- Lyft Product Language, styled-components, Material UI
+- authn/authz
+- i18n
+- RUM performance tracking
+- Feature flagging and experimentation
+- MirageJS
+- Logging/metrics/bug reporting
 
 ---
 
-## Next.js
+### Flywheel effect
 
-- Lean on OSS community to build/maintain the core infrastructure
-- Filesystem router lets us ditch a lot of boilerplate code
-- SSR support out of the box
-- We really liked the community
+- Now users are contributing back to these plugins
+- Over 60% of new plugins have been product-engineer contributions
 
----
+???
 
-## Design philosophy: Selective Control
-
-In order to guide us into our next phase of growth, we needed to standardize and automate the parts of the ecosystem that were starting to drift
+Because these plugins are so loosely coupled/highly cohesive, they have been highly adopted throughout
 
 ---
 
-## Benefits we saw from our plugins
+## Plugins & their benefits
 
-- Benefit: Consistent interfaces - standardization
-- Benefit: Remove outliers
-- Benefit: Flywheel effect - contributors within the community
+- Standardization that reduces drift
+- Flywheel effect
+- Over 60% of plugins
 
 ---
 
 ## Migrations
 
-Migrations are guardrails that prevent drift
-Migrations increase user satisfaction and developer ergonomics
-All plugins ship with the ability to run jscodeshift migrations, and because implementations have been standardized, can be knowingly applied
-Migrations run sequentially
+- Guardrails to prevent drift
+- jscodeshift scripts
 
-We also have a tool that can selectively apply and merge jscodeshifts
+---
+
+```ts
+// Original
+import { logger } from "@lyft/service-plugin-logging";
+logger.info("test log");
+```
+
+```ts
+// Upgraded
+import { getLogger } from "@lyft/service-plugin-logging";
+const logger = getLogger();
+logger.info("test log");
+```
+
+???
+
+Here's an example of a migration that a teammate wrote when they updated the behavior of an export from one of our logging plugins. They wrote a migration that corresponded with the implementing change.
+
+---
+
+## Migration Versioning
+
+- We use versioned migrations
+- If you change an interface, you must ship a migration
+- Store migration state per plugin in `package.json`
+
+---
+
+## One bold constraint
+
+- The platform version and the plugin system are pinned to the same version
+- This means the entire platform moves together! 🎯
 
 ---
 
 ## Organizational process
 
 - Hands-on migration workshops
-- Tools that automate away 90% of the migration from Gen 2 to Gen 3
-- Trainings for teams to help each other
+- Build tools that automate majority of the migration from Gen 2 to Gen 3
 - Relentless internal evangelism
 
 ---
 
-## Core principles and takeaways
+class: table-centered
 
-1. Don't overoptimize. Make sure you have a true pain point before you attempt a migration to your next phase
-2. Apply selective leverage (control) at appropriate points in the system.
-3. Allow escape hatches; there will always be outliers
-4. Make sure you finish the job
+## Principles for Technical Leverage
 
+| <h1>👟</h1>                               | <h1>✨</h1>                | <h1>🤖</h1>                      |
+| ----------------------------------------- | -------------------------- | -------------------------------- |
+| **Stand** on the Shoulders of<br />Giants | **Simplify** to Understand | **Standardize** and **Automate** |
 
+???
 
----
-
-class: diagram-image middle center
-
-#### Continuum of Control
-
-<img src="./images/control-freedom.jpg" />
-
+By applying these principles at the right place in the stack, we ended up choosing Next.js and adding some extra special sauce to make our platform really fly.

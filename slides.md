@@ -342,20 +342,14 @@ Because these plugins are so loosely coupled/highly cohesive, they have been hig
 
 ---
 
-## Plugins & their benefits
-
-- Standardization that reduces drift
-- Flywheel effect
-- Over 60% of plugins
-
----
-
-## Migrations
+## Migrations - how we Automate
 
 - Guardrails to prevent drift
 - jscodeshift scripts
 
 ---
+
+class: background-color-code
 
 ```ts
 // Original

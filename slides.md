@@ -201,6 +201,13 @@ A @lyft/service Plugin:
 
 - Allows you to integrate libraries by providing hooks at specific layers of the system: React (Server + Client), Express middleware, Next initialization
 
+Plugin Hooks:
+- Webpack
+- Express Middleware
+- NextJS Configuration
+- NextJS Application
+- NextJS Document
+
 - Allows you to integration libraries by providing hooks at specific layers of the system: React (Server + Client), Express middleware, Next.js initialization
 
 - Export user-functionality like hooks that are then used by the consumer.
@@ -328,6 +335,10 @@ const useCookieAuth = () => ({
 - Feature flagging and experimentation
 - MirageJS
 - Logging/metrics/bug reporting
+
+#### Coming Soon
+- Developer Support Tooling
+  - Embedded tools to help developers debug or ask for help
 
 ---
 

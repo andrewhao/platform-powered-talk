@@ -1,6 +1,6 @@
 class: middle hide-slide-number
 
-# <ins>Platform-Powered</ins>
+# <ins>Platform-Powered</ins> 🚀
 
 Build a frontend platform that scales as fast as you do
 
@@ -8,13 +8,17 @@ Build a frontend platform that scales as fast as you do
 
 ???
 
-Hi everyone, I'm Andrew. I'm a software engineer at Lyft.
+Hi everyone, I'm Andrew. I'm a software engineer at Lyft. I wanted to share some stories today about how we're building our next-generation platform for our frontend microservices as we've grown over the years. But first, I wanted to tell a story.
 
 ---
 
 class: center middle
 
 ## Ever felt growing pains?
+
+???
+
+Have you ever been at a company that was growing quickly and experiencing growing pains? Maybe you were once a close-knit engineering team working on a monolith, but as the business saw success, you started expanding to grow new teams. With new teams comes new challenges for the business to solve, and with those new teammates, it becomes harder to solve in a single codebase. So you split out your code into several different services or repositories. As time passes, you witness the platform grow and grow. But because everything's decentralized, you're finding it hard to make sure everybody's doing the same things around security updates and migrations and keeping the same patterns in place. This can't possibly scale right?
 
 ---
 
@@ -26,24 +30,16 @@ class: middle
 
 ---
 
-## Generation 1: Monolith
+## Monolith to Microservices
 
 - Python/Angular monolith
-- Everything is in one codebase
-- Conventions can be enforced
-- Code is reviewed in one place
+- ...to Node + React isomorphic apps via a templated service generator
+- ...coupled with infrastructure investments in microservices
+- ...led to a microservice explosion! 💥
 
 ???
 
-But problems
 
----
-
-## Generation 2: Microservices
-
-- Node + React isomorphic (SSR) apps via a templated service generator
-- ...coupled with infrastructure investments in microservices
-- ...led to a microservice explosion!
 
 ---
 
@@ -52,7 +48,6 @@ But problems
 - Long-lived services require maintenance
 - Platform was fragmenting
 - New infrastructure updates were hard to apply
-- Increased service load
 
 ???
 
@@ -70,16 +65,6 @@ This is a talk about leverage, and how to think about it and knowing where to ap
 
 ---
 
-class: middle
-
-#### Technical Leverage: Applying Outsized Force
-
-- Developer productivity
-- System reliability
-- Security
-
----
-
 class: middle center
 
 ## But where to start?
@@ -88,15 +73,23 @@ class: middle center
 
 But where in the system do you apply?
 
+Generally when we think about technical leverage we think "Oh, we'll centralize everything in a single platform/repository/service", or we think about buying a SaaS offering from a vendor
+
 It can be hard to know where to start. It’s worse to build the wrong abstraction than have no abstraction at all.
 
 We selectively apply leverage at different tiers of the system
+
+
 
 ---
 
 class: diagram-image middle center
 
 <img src="./images/pyramid.png" />
+
+???
+
+There's a more structured way to think about technical leverage. Let's actually consider where in your application you want to introduce constraints. In this tiered architecture...
 
 ---
 
@@ -108,6 +101,20 @@ class: diagram-image middle center
 
 At the top app layer: empower (allow developers to do anything they want)
 At the bottom library/infra layer: control (manage with tooling)
+
+Previously in our generation 2 architecture we had attempted to solve the bottom layer - infrastructure - but did not succeed.
+
+---
+
+class: middle center
+
+## Generation 3: @lyft/service ✨
+
+???
+
+With these insights, we set out to architect our new platform, calling it @lyft/service.
+
+When designing this service, we got the following insights:
 
 ---
 
@@ -162,7 +169,7 @@ Previously, every application was a snowflake, configured in its own special way
 
 --
 
-<span class="emoji-large">🎷</span> **Now:** Decreased support burden on platform teams, higher reusability
+<span class="emoji-large">🍕</span> **Now:** Lower cognitive load working in apps, higher developer productivity
 
 ???
 
@@ -187,13 +194,19 @@ We made **migrations** a first-class part of our new system
 
 --
 
-<span class="emoji-large">🎸</span> **Now:** we have the tools to keep the stack modern and prevent drift
+<span class="emoji-large">🎸</span> **Now:** we have the tools to reuse code, keep the stack modern and prevent drift
 
 ---
 
 ## Anatomy of a Plugin
 
 - A set of hooks, bundled up in a library
+- Plugin Hooks:
+  - Webpack
+  - Express Middleware
+  - Next.js Configuration
+  - Next.js Application
+  - Next.js Document
 
 ???
 
@@ -201,12 +214,6 @@ A @lyft/service Plugin:
 
 - Allows you to integrate libraries by providing hooks at specific layers of the system: React (Server + Client), Express middleware, Next initialization
 
-Plugin Hooks:
-- Webpack
-- Express Middleware
-- NextJS Configuration
-- NextJS Application
-- NextJS Document
 
 - Allows you to integration libraries by providing hooks at specific layers of the system: React (Server + Client), Express middleware, Next.js initialization
 
@@ -336,16 +343,18 @@ const useCookieAuth = () => ({
 - MirageJS
 - Logging/metrics/bug reporting
 
-#### Coming Soon
+---
+### Coming Soon
+
 - Developer Support Tooling
-  - Embedded tools to help developers debug or ask for help
+- Embedded tools to help developers debug or ask for help
 
 ---
 
 ### Flywheel effect
 
 - Now users are contributing back to these plugins
-- Over 60% of new plugins have been product-engineer contributions
+- Over 40% of new plugins have been product-engineer contributions
 
 ???
 
@@ -353,7 +362,7 @@ Because these plugins are so loosely coupled/highly cohesive, they have been hig
 
 ---
 
-## Migrations - how we Automate
+## Migrations - How we Automate
 
 - Guardrails to prevent drift
 - jscodeshift scripts
@@ -389,18 +398,32 @@ Here's an example of a migration that a teammate wrote when they updated the beh
 
 ---
 
-## One bold constraint
+## Release Management: One bold constraint
 
-- The platform version and the plugin system are pinned to the same version
-- This means the entire platform moves together! 🎯
+- The platform version and the plugin system are pinned to the same version 🎯
+- Plugins are guaranteed to work with a specific version of the platform
+- This means the entire platform moves together!
+
+???
+
+One opinionated design constraint we introduce is, much like projects like React and Babel, that our plugins move in lockstep with the platform.
 
 ---
 
 ## Organizational process
 
 - Hands-on migration workshops
-- Build tools that automate majority of the migration from Gen 2 to Gen 3
+- Migration scripts take services most of the way from Gen 2 to Gen 3
 - Relentless internal evangelism
+- Technical program management + senior leadership visibility are key
+
+---
+
+
+## Wins
+
+- Higher developer happiness and productivity
+- Quicker adoption of new service releases, preventing drift
 
 ---
 
